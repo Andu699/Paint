@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini Paint</title>
+  <style>
+    body {
+      background: #fafafa;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      margin: 20px 0 10px 0;
+    }
+    #toolbar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+    #toolbar label {
+      font-size: 1rem;
+      color: #333;
+      margin-right: 3px;
+    }
+    #canvas {
+      background: #fff;
+      box-shadow: 0 2px 14px #bbb6;
+      border-radius: 12px;
+      border: 1.5px solid #eee;
+      cursor: crosshair;
+      touch-action: none;
+    }
+    #clear {
+      padding: 6px 16px;
+      background: #ff7675;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 1rem;
+      box-shadow: 0 1px 4px #ccc5;
+      transition: background 0.15s;
+    }
+    #clear:active {
+      background: #d63031;
+    }
+  </style>
+</head>
+<body>
+  <h1>Mini Paint 🖌️</h1>
+  <div id="toolbar">
+    <label for="color">Culoare:</label>
+    <input type="color" id="color" value="#222">
+    <label for="size">Grosime:</label>
+    <input type="range" id="size" min="1" max="24" value="4">
+    <span id="sizeValue">4</span>px
+    <button id="clear">Curăță tot</button>
+  </div>
+  <canvas id="canvas" width="700" height="440"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let painting = false;
+    let lastX = 0, lastY = 0;
+
+    // Tool UI
+    const colorPicker = document.getElementById('color');
+    const sizeSlider = document.getElementById('size');
+    const sizeValue = document.getElementById('sizeValue');
+    const clearBtn = document.getElementById('clear');
+
+    // Setări inițiale
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = colorPicker.value;
+    ctx.lineWidth = sizeSlider.value;
+
+    function startPaint(e) {
+      painting = true;
+      const rect = canvas.getBoundingClientRect();
+      lastX = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+      lastY = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+    }
+
+    function paint(e) {
+      if (!painting) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+      const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+
+      ctx.strokeStyle = colorPicker.value;
+      ctx.lineWidth = sizeSlider.value;
+
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+
+      lastX = x;
+      lastY = y;
+    }
+
+    function stopPaint() {
+      painting = false;
+    }
+
+    // Mouse events
+    canvas.addEventListener('mousedown', startPaint);
+    canvas.addEventListener('mousemove', paint);
+    canvas.addEventListener('mouseup', stopPaint);
+    canvas.addEventListener('mouseleave', stopPaint);
+
+    // Touch events (mobil/tabletă)
+    canvas.addEventListener('touchstart', startPaint);
+    canvas.addEventListener('touchmove', paint);
+    canvas.addEventListener('touchend', stopPaint);
+    canvas.addEventListener('touchcancel', stopPaint);
+
+    colorPicker.addEventListener('input', () => {
+      ctx.strokeStyle = colorPicker.value;
+    });
+
+    sizeSlider.addEventListener('input', () => {
+      ctx.lineWidth = sizeSlider.value;
+      sizeValue.textContent = sizeSlider.value;
+    });
+
+    clearBtn.addEventListener('click', () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+
+  </script>
+</body>
+</html>
